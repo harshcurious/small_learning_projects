@@ -1,7 +1,7 @@
 """Error handling tests - learning pytest.raises for exceptions."""
 
 import pytest
-import statistics
+import stats as statistics
 
 
 class TestMeanErrors:

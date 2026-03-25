@@ -1,7 +1,7 @@
 """Fixtures tests - learning pytest fixtures with setup/teardown."""
 
 import pytest
-import statistics
+import stats as statistics
 
 
 @pytest.fixture

@@ -1,6 +1,6 @@
 """Basic pytest tests for statistics module."""
 
-import statistics
+import stats as statistics
 
 
 def test_mean_simple():

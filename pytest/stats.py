@@ -1,16 +1,16 @@
 """Statistical functions for learning pytest."""
 
-from typing import List
 
 
-def mean(data: List[float]) -> float:
+
+def mean(data: list[float]) -> float:
     """Calculate the arithmetic mean of a list of numbers."""
     if not data:
         raise ValueError("Cannot calculate mean of empty list")
     return sum(data) / len(data)
 
 
-def median(data: List[float]) -> float:
+def median(data: list[float]) -> float:
     """Calculate the median of a list of numbers."""
     if not data:
         raise ValueError("Cannot calculate median of empty list")
@@ -24,15 +24,13 @@ def median(data: List[float]) -> float:
         return (sorted_data[n // 2 - 1] + sorted_data[n // 2]) / 2
 
 
-def variance(data: List[float], ddof: int = 0) -> float:
+def variance(data: list[float], ddof: int = 0) -> float:
     """Calculate the variance of a list of numbers.
 
     Args:
         data: List of numbers
         ddof: Delta degrees of freedom (0 for population, 1 for sample)
     """
-    if not data:
-        raise ValueError("Cannot calculate variance of empty list")
     if len(data) <= ddof:
         raise ValueError(f"Need at least {ddof + 1} data points")
 
@@ -40,7 +38,7 @@ def variance(data: List[float], ddof: int = 0) -> float:
     return sum((x - m) ** 2 for x in data) / (len(data) - ddof)
 
 
-def std(data: List[float], ddof: int = 0) -> float:
+def std(data: list[float], ddof: int = 0) -> float:
     """Calculate the standard deviation of a list of numbers.
 
     Args:
@@ -50,7 +48,7 @@ def std(data: List[float], ddof: int = 0) -> float:
     return variance(data, ddof) ** 0.5
 
 
-def correlation(x: List[float], y: List[float]) -> float:
+def correlation(x: list[float], y: list[float]) -> float:
     """Calculate Pearson correlation coefficient between two lists."""
     if not x or not y:
         raise ValueError("Cannot calculate correlation of empty list")
@@ -63,8 +61,8 @@ def correlation(x: List[float], y: List[float]) -> float:
     mean_x = mean(x)
     mean_y = mean(y)
 
-    numerator = sum((x[i] - mean_x) * (y[i] - mean_y) for i in range(n))
-    denominator = (
+    numerator: float = sum((x[i] - mean_x) * (y[i] - mean_y) for i in range(n))
+    denominator: float = (
         sum((xi - mean_x) ** 2 for xi in x) * sum((yi - mean_y) ** 2 for yi in y)
     ) ** 0.5
 

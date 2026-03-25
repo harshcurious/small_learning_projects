@@ -1,7 +1,7 @@
 """Parametrized tests for statistics module - learning pytest.mark.parametrize."""
 
 import pytest
-import statistics
+import stats as statistics
 
 
 class TestMeanParametrized:

@@ -1,6 +1,6 @@
 """Tests using shared fixtures from conftest.py."""
 
-import statistics
+import stats as statistics
 
 
 def test_mean_with_sample(sample_numbers):

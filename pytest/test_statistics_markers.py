@@ -1,7 +1,7 @@
 """Tests with markers - learning pytest markers and CLI options."""
 
 import pytest
-import statistics
+import stats as statistics
 
 
 @pytest.mark.basic
