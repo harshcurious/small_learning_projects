@@ -1,5 +1,7 @@
 """Statistical functions for learning pytest."""
 
+import math
+
 
 
 
@@ -62,9 +64,9 @@ def correlation(x: list[float], y: list[float]) -> float:
     mean_y = mean(y)
 
     numerator: float = sum((x[i] - mean_x) * (y[i] - mean_y) for i in range(n))
-    denominator: float = (
+    denominator: float = math.sqrt(
         sum((xi - mean_x) ** 2 for xi in x) * sum((yi - mean_y) ** 2 for yi in y)
-    ) ** 0.5
+    )
 
     if denominator == 0:
         raise ValueError("Cannot calculate correlation when all values are the same")
