@@ -65,12 +65,12 @@ def _(pprint, tavily_client):
         query="latest trends in generative AI 2026",
         search_depth="advanced",
         topic="news",
-        time_range="w",        # past week
+        time_range="w",  # past week
         max_results=10,
         include_raw_content=True,
         include_images=False,
         include_answer=True,
-        exclude_domains=["some-spammy-site.com","low-quality-blog.org"]
+        exclude_domains=["some-spammy-site.com", "low-quality-blog.org"],
     )
 
     for res in _response["results"]:
@@ -102,7 +102,7 @@ def _(tavily_client):
         include_raw_content=True,
         include_images=False,
         include_answer=False,
-        exclude_domains=["spammy-site.com","low-quality-blog.org"]
+        exclude_domains=["spammy-site.com", "low-quality-blog.org"],
     )
     return (response_default,)
 
@@ -114,14 +114,16 @@ def _(pprint, response_default):
 
 
 @app.cell(hide_code=True)
-def _():
+def _(mo):
+    mo.md(r"""
     ## Module 3 Advanced Tools: Extract, Crawl, Map
-
+    """)
     return
 
 
-app._unparsable_cell(
-    r"""
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(r"""
     ## Extract
 
     - API that extracts full _cleaned_ content of URL
@@ -130,10 +132,9 @@ app._unparsable_cell(
         - need entire content for analysis
         - don't want to write custom parsing logic
         - have specific question and want Extract to rerank the most relavant part of page (or limit number of snippets from the source)
-    - 
-    """,
-    column=None, disabled=False, hide_code=True, name="_"
-)
+    -
+    """)
+    return
 
 
 @app.cell
@@ -142,11 +143,11 @@ def _(tavily_client):
         urls=["https://en.wikipedia.org/wiki/Artificial_intelligence"],
         include_images=False,
         include_metadata=True,
-        extract_depth='basic'
+        extract_depth="basic",
     )
 
     for _res in extract_response["results"]:
-        print('URL: ', _res["url"])
+        print("URL: ", _res["url"])
         print(_res["raw_content"][:300], "...")
     return (extract_response,)
 
@@ -191,13 +192,13 @@ def _(tavily_client):
         urls=["https://en.wikipedia.org/wiki/Artificial_intelligence"],
         include_images=False,
         include_metadata=True,
-        extract_depth='basic',
+        extract_depth="basic",
         chunks_per_source=3,
         query="What are the main applications of AI?",
     )
 
     for _res in extract_response_2["results"]:
-        print('URL: ', _res["url"])
+        print("URL: ", _res["url"])
         print(_res["raw_content"][:300], "...")
     return (extract_response_2,)
 
@@ -210,7 +211,7 @@ def _(extract_response_2):
 
 @app.cell
 def _(extract_response_2):
-    with open("extract_response.txt", 'w') as f:
+    with open("extract_response.txt", "w") as f:
         f.write(str(extract_response_2))
     return
 
@@ -223,8 +224,9 @@ def _(mo):
     return
 
 
-app._unparsable_cell(
-    r"""
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(r"""
     ### Best Practices
 
     - 1st search; then extract
@@ -233,9 +235,77 @@ app._unparsable_cell(
     - Use `chunck_per_source` (1-5; default 3) to keep `raw_content` small
         - raw_content looks like: `<chunk> [...] <chunk2> [...] <chunk3>`
     - Only <=20 URL at once
-    """,
-    column=None, disabled=False, hide_code=True, name="_"
-)
+    """)
+    return
+
+
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(r"""
+    ## Crawl & Map
+    > Currently in Beta
+    """)
+    return
+
+
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(r"""
+    **Crawl**:
+    - Graph based site traversal
+    - Explore links in parallel
+    - Follows hyperlinks and fetched content
+    - Useful for scraping and indexing documentation, blogs, products etc.
+
+
+    **Map**:
+    - Walks a site like a graph and returns a list of URL
+    - Doesn't extract the content
+    - Useful for understanding the structure of a site before paying for full ingestion
+        - URL index of documentation, blogs, wikis
+        - Understand navigation structure and page hierarchy
+        - Used before a Extract or focused crawl step
+    """)
+    return
+
+
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(r"""
+    | Crawl Parameter                                   | What It Controls                                                                                                                            |
+    |---------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------|
+    | url (string)                                | The base URL from where the crawl begins (root domain or subdomain)                                                                         |
+    | max_depth (int)                             | How many link-hops away from the root the crawl can reach (e.g. 1 = only pages directly linked, 2 = pages linked from those pages, etc.)    |
+    | max_breadth (int)                           | How many links per page the crawler will follow (i.e. how wide each level of traversal is)                                                  |
+    | limit (int)                                 | Total number of links/pages the crawl will process before stopping, useful to cap cost and runtime                                          |
+    | select_paths / select_domains (string[])    | Regex filters to include only URLs matching certain path patterns or domains (e.g. /blog/.*, only docs subdomain)                           |
+    | exclude_paths / exclude_domains (string[])  | Regex filters to exclude certain paths/domains (e.g. /private/.*, admin pages)                                                              |
+    | allow_external (bool)                       | Whether links to external domains are allowed (if you want to stay within the same domain or permit external links)                         |
+    | extract_depth (enum: "basic" or "advanced") | Controls how the crawl extracts content from each page: basic may fetch main text; advanced tries to include embedded content, tables, etc. |
+    | include_images (bool)                       | Optionally include image data from pages, useful when extracting multimedia or rich content                                                 |
+    | instructions (string)                       | Natural language instructions for the crawler.                                                                                              |
+    """)
+    return
+
+
+@app.cell
+def _(tavily_client):
+    crawl_response = tavily_client.crawl(
+        url="https://docs.tavily.com",
+        max_depth=3,
+        max_breadth=30,
+        limit=100,
+        select_paths=["/documentation/.*", "/sdk/.*"],
+        exclude_paths=["/private/.*", "/admin/.*"],
+        allow_external=False,
+        extract_depth="advanced",
+        include_images=False
+    )
+
+    for page in crawl_response["results"]:
+        print(page["url"])
+        print(page["raw_content"][:200], "...")
+    return
 
 
 @app.cell
