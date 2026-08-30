@@ -43,7 +43,13 @@ def _():
         ][0]
         VECTOR_DB.append((chunk, embedding))
 
-    return (add_chunk_to_database,)
+    return (
+        EMBEDDING_MODEL,
+        LANGUAGE_MODEL,
+        VECTOR_DB,
+        add_chunk_to_database,
+        ollama,
+    )
 
 
 @app.cell(hide_code=True)
@@ -67,6 +73,49 @@ def cosine_similarity(a, b):
     norm_a = sum([x**2 for x in a]) ** 0.5
     norm_b = sum([x**2 for x in b]) ** 0.5
     return dot_product / (norm_a * norm_b)
+
+
+@app.cell
+def _(EMBEDDING_MODEL, VECTOR_DB, ollama):
+    def retrieve(query, top_n=3):
+        query_embedding = ollama.embed(model=EMBEDDING_MODEL, input=query)['embeddings'][0]
+        similarities = []
+
+        for _chunk, _embedding in VECTOR_DB:
+            similarity = cosine_similarity(query_embedding, _embedding)
+            similarities.append((_chunk, similarity))
+
+        similarities.sort(key=lambda x: x[1], reverse=True)
+
+        return similarities[:top_n]
+
+    return (retrieve,)
+
+
+@app.cell
+def _(retrieve):
+    input_query = input("Ask me a question: ")
+    retrieved_knowledge = retrieve(input_query)
+
+    print('Retrieved knowledge:')
+    for _chunk, _similarity in retrieved_knowledge:
+        print(f" - (similarity: {_similarity:2f}) {_chunk}")
+
+    instruction_prompt = f"""You are a helpful chat bot.
+    Use only the following pieces of context to answer the question. Do NOT make up information:
+    {'\n'.join([f' - {_chunk}' for _chunk, _similarity in retrieved_knowledge])}
+    """
+    return input_query, instruction_prompt
+
+
+@app.cell
+def _(LANGUAGE_MODEL, input_query, instruction_prompt, ollama):
+    stream = ollama.chat(model=LANGUAGE_MODEL, messages=[{'role': 'system', 'content': instruction_prompt}, {'role': 'user', 'content': input_query}], stream=True)
+
+    print('Chatbot response: ')
+    for _chunk in stream:
+        print(_chunk['message']['content'], end='', flush=True)
+    return
 
 
 @app.cell
